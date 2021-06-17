@@ -91,7 +91,8 @@ public class Edge {
 	
 	public static void main(String[] args) {
 		Edge edge = new Edge();
-
+		int interval = 1000;
+		
 		long lastSent = System.currentTimeMillis();
 		while (true) {
 			// establish conection
@@ -99,12 +100,12 @@ public class Edge {
 			edge.collectData();
 			edge.sendData();
 			
-			long millis = System.currentTimeMillis(); // send every 100ms independent of data collection &
+			long millis = System.currentTimeMillis(); // send regularly independent of data collection &
 														// sending time
 			long timeSinceLast = millis - lastSent;
 			lastSent = millis;
 			try {
-				Thread.sleep(Utils.clamp(100 - timeSinceLast, 0, 100));
+				Thread.sleep(Utils.clamp(interval - timeSinceLast, 0, interval));
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
