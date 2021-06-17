@@ -1,4 +1,7 @@
 import java.util.*;
+
+import org.json.simple.JSONObject;
+
 import java.io.*;
 import java.net.*;
 
@@ -7,9 +10,12 @@ public class Edge {
 	private List<Sensor> sensors = new ArrayList<Sensor>();
 	String ip = "35.198.79.71";
 	private int port = 3389;
-	Socket socket;
-	DataInputStream inputstream;
-	DataOutputStream outputstream;
+	private Socket socket;
+	private DataInputStream inputstream;
+	private DataOutputStream outputstream;
+	private int ID;
+	private String name;
+	private int[] location = new int[2];
 	
 	boolean connected;
 
@@ -18,6 +24,11 @@ public class Edge {
 		sensors.add(new HumiditySensor());
 		sensors.add(new MoistureSensor());
 		sensors.add(new TemperatureSensor());
+		
+		this.ID = (int) Math.floor(Math.random()*65535);
+        this.name = ("Node " + this.ID);
+        this.location[0] = (int)Math.floor(Math.random()*10);
+        this.location[1] = (int)Math.floor(Math.random()*10);
 	}
 
 	private boolean receiveData() {
@@ -33,7 +44,7 @@ public class Edge {
 
 	private void collectData() {
 		for (Sensor s : sensors) {
-			outBuffer.add(new DataPoint(s.getType(), s.getData())); // read sensor values and add them to the outBuffer
+			outBuffer.add(new DataPoint(s.getType(), s.getData(), System.currentTimeMillis())); // read sensor values and add them to the outBuffer
 		}
 	}
 
@@ -46,8 +57,8 @@ public class Edge {
 			}
 			while (iterator.hasNext()) {
 				DataPoint dp = iterator.next();
-				System.out.println(dp.value + " " + dp.source);
-				//create json here
+				JSONObject data = dp.getJSON();
+				System.out.println(data);
 				
 				outputstream.writeUTF("Hallöchen");
 				
@@ -55,6 +66,7 @@ public class Edge {
 				{
 					receiveData();
 				}
+				
 				iterator.remove();
 			}
 		} catch (Exception e){
@@ -69,6 +81,11 @@ public class Edge {
 		socket = new Socket(address, port);
 		inputstream = new DataInputStream(socket.getInputStream());
         outputstream = new DataOutputStream(socket.getOutputStream());
+        JSONObject registration = new JSONObject();
+        registration.put("ID", this.ID);
+        registration.put("name", this.name);
+        registration.put("pos", this.location);
+        outputstream.writeUTF(registration.toString());
         connected = true;
     }
 	
