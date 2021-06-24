@@ -50,5 +50,4 @@ public class DataHandling {
         answer.put("gap", gap);
         return answer;
     }
-
 }
